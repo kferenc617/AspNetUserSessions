@@ -1,13 +1,15 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace eDM.Utils
 {
     public class UserSessionList
     {
         private readonly object _lockList = new object();
-        private readonly object _lockProps = new object();
+        private readonly ReaderWriterLockSlim _lockProps = new ReaderWriterLockSlim();
         private readonly Dictionary<string, UserSession> _list = new Dictionary<string, UserSession>();
 
         private TimeSpan _expireAfterMinutes = TimeSpan.FromMinutes(30);  //30 minustes is the default timeout for forms auth
@@ -16,19 +18,28 @@ namespace eDM.Utils
         {
             //We use a simple lock here considering that this property will be seldom written (normally only at startup)
             //and concurrent reading is not a typical scenario either.
-            //TODO: consider using readwrite lock
             get
             {
-                lock (_lockProps)
+                _lockProps.EnterReadLock();
+                try
                 {
                     return _expireAfterMinutes;
+                }
+                finally
+                {
+                    _lockProps.ExitReadLock();
                 }
             }
             set
             {
-                lock (_lockProps)
+                _lockProps.ExitWriteLock();
+                try
                 {
                     _expireAfterMinutes = value;
+                }
+                finally
+                {
+                    _lockProps.EnterWriteLock();
                 }
             }
         }
