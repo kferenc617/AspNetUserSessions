@@ -32,14 +32,14 @@ namespace eDM.Utils
             }
             set
             {
-                _lockProps.ExitWriteLock();
+                _lockProps.EnterWriteLock();
                 try
                 {
                     _expireAfterMinutes = value;
                 }
                 finally
                 {
-                    _lockProps.EnterWriteLock();
+                    _lockProps.ExitWriteLock();
                 }
             }
         }
@@ -150,6 +150,17 @@ namespace eDM.Utils
         }
 
         /// <summary>
+        /// Clears the list
+        /// </summary>
+        public void Clear()
+        {
+            lock (_lockList)
+            {
+                _list.Clear();
+            }
+        }
+
+        /// <summary>
         /// Returns the list of sessions
         /// </summary>
         /// <param name="skipCleanExpired">If true (default: false), expires sessions are not cleaned from the list before returning it</param>
@@ -179,14 +190,17 @@ namespace eDM.Utils
                 {
                     if (_list.TryGetValue(sess.SessionID, out UserSession listSession))
                     {
+                        //Normally the sessions being loaded represents an older state of the sessions, as they are loaded from a database (e.g.: after a server restart)
+                        //If the same session is added before we had chance to load the old ones from the database, we update only those fields that do not have "meaningful" current values.
+                        //otherwise the newly added session has more recent values.
                         if (String.IsNullOrEmpty(listSession.UserID))
                             listSession.UserID = sess.UserID;
                         if (String.IsNullOrEmpty(listSession.UserName))
-                            listSession.UserID = sess.UserName;
+                            listSession.UserName = sess.UserName;
                         if (listSession.LoginDate == null)
                             listSession.LoginDate = sess.LoginDate;
                         if (String.IsNullOrEmpty(listSession.ClientHost))
-                            listSession.UserID = sess.ClientHost;
+                            listSession.ClientHost = sess.ClientHost;
 
                         if (listSession.LastActive < sess.LastActive)
                         {
