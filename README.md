@@ -26,13 +26,13 @@ Expected to be called by each user request.
 ## Remove method
 Call it when user session ends (e.g.: user logs out of the system)
 
-##GetSessions method
+## GetSessions method
 Returns the session list. If the skipCleanExpired if false (or omitted) sessions are removed that has not been active for at least ExpireAfterMinutes.
 The objects are copies of the internal objects, modifying them wont affect the contents of the internal list.
 
-##LoadSessions method
+## LoadSessions method
 This can be used to load previously serialized session list (e.g.: saved into a database or a json file, etc). 
 As the list lives in the memory, this is useful when the server restarts (e.g.: get session list using GetSessions() and store them into a database in application_end event, and reload them in Application_Start)
 
-##ExpireAfterMinutes property
+## ExpireAfterMinutes property
 default is 30 minutes which is default expiry for forms auth. This property affects which sessions are cleaned in GetSessions. If you'd like to see expired session for a while, set it a little bigger than your forms auth expiry. The list expects that sliding expiration is in effect.
