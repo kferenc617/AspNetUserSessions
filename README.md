@@ -1,5 +1,5 @@
 # AspNetUserSessions
-A simple thrad-safe c# class to maintain user sessions in an asp.net or possibly in other IIS-powered webapps.
+A simple thread-safe c# class to maintain user sessions in an asp.net or possibly in other IIS-powered webapps.
 
 # Why it was useful for Me
 I wanted to get a list of active user (and possibly some that expired not so long ago) sessions in my asp.net webforms app. Theretically, the InProc session cache can be accessed using reflection, but this can be implememtation specific and its thread safety is questionable at best. But the most importantly it was fun to make it.
@@ -16,21 +16,21 @@ In my case Session.SessionID was not useful either, because it changed from requ
 
 At the end I used the XSRF token that gets generated as part of the XSRF protection.
 
-## AddOrUpdate method
+## AddOrUpdate() method
 This should be called when user logs into the system. Depending on your session management this may or may not be the first one called for a session.
 For example if a sessionID is allocated for non-authenticated users, it is good idea to call UpdateLastActive() too for pages that can be accessed anonymously, because it allows us to track non-auth sessions too.
 
-## UpdateLastActive method
+## UpdateLastActive() method
 Expected to be called by each user request.
 
-## Remove method
+## Remove() method
 Call it when user session ends (e.g.: user logs out of the system)
 
-## GetSessions method
+## GetSessions() method
 Returns the session list. If the skipCleanExpired if false (or omitted) sessions are removed that has not been active for at least ExpireAfterMinutes.
 The returned objects are copies of the internal objects, modifying them wont affect the contents of the internal list.
 
-## LoadSessions method
+## LoadSessions() method
 This can be used to load previously serialized session list (e.g.: saved into a database or as a json file, etc). 
 As the list lives in the memory, this is useful when the server restarts (e.g.: get session list using GetSessions() and store them in a database in Application_End event, and reload in Application_Start)
 
